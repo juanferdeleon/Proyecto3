@@ -1,4 +1,5 @@
-﻿.global	__aeabi_idivmod
+﻿
+.global	__aeabi_idivmod
 .align	2
 .global	RANDOM
 .type	RANDOM, %function

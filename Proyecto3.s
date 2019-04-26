@@ -13,11 +13,11 @@ opcion_de_juego: .word 0
 opcion_mayor_menor: .word 0
 
 /*Mensajes*/
-mensaje_bienvenida: .asciz "\n\t\tBIENVENIDO\n\n\tJUEGO MAYOR O MENOR\n\nModos de juego:\n\n\t1. Single Player\n\t2. Multiplayer"
+mensaje_bienvenida: .asciz "\n\t\t\033[32mBIENVENIDO\n\n\t   JUEGO MAYOR O MENOR\033[0m\n\nModos de juego:\n\n\t1. Single Player\n\t2. Multiplayer"
 mensaje_ingreso: .asciz "\nIngrese una opcion: "
 ingreso_valor: .asciz "%d"
-mensaje_error: .asciz "\nEl valor ingresado no es valido\n"
-mensaje_mayor_menor: .asciz "\nEl sigiente valor sera MENOR(0) O MAYOR(1):"
+mensaje_error: .asciz "\n\033[31mERROR:\033[0m El valor ingresado no es valido\n"
+mensaje_mayor_menor: .asciz "\nEl sigiente valor sera \033[32mMENOR(0) O MAYOR(1)\033[0m:"
 
 /*Mensajes turnos*/
 turno_jugador1: .asciz "\n\t\tTURNO JUGADOR 1"
@@ -25,7 +25,7 @@ turno_jugador2: .asciz "\n\t\tTURNO JUGADOR 2"
 turno_computadora: .asciz "\nTURNO COMPUTADORA"
 
 /*Menajes de dados*/
-mensaje_dados: .asciz "\n-------------VALOR DE DADOS: %ld---------------\n"
+mensaje_dados: .asciz "\n\033[38;5;206m-------------VALOR DE DADOS: %ld---------------\033[0m\n"
 mensaje_dados1: .asciz "\nDado 1: %d\n"
 mensaje_dados2: .asciz "Dado 2: %d\n"
 
@@ -35,8 +35,8 @@ marcador_jugador1: .asciz ">>>JUGADOR 1: %d\n"
 marcador_jugador2: .asciz ">>>JUGADOR 2: %d\n"
 
 /*Mensajes victorias*/
-jugador1_gano: .asciz "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\t\tJUAGODR 1 HA GANADO\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-jugador2_gano: .asciz "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\t\tJUAGODR 2 HA GANADO\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+jugador1_gano: .asciz "\n\033[32m!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\t\tJUAGODR 1 HA GANADO\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\033[0m"
+jugador2_gano: .asciz "\n\033[32m!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\t\tJUAGODR 2 HA GANADO\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\033[0m"
 
 .text
 .align 2
@@ -91,6 +91,7 @@ modo_juego:
 
 
 single_player:
+
 	/*Jugar contra la computadora*/
 	BL ganar
 
@@ -141,6 +142,8 @@ jugador1:
 
 	PUSH {lr}
 
+	BL marcador_actual
+
 	/*Turno del jugador 1*/
 
 	LDR r0, =turno_jugador1
@@ -175,6 +178,8 @@ jugador1:
 jugador2:
 
 	PUSH {lr}
+
+	BL marcador_actual
 
 	/*Turno del jugador 2*/
 
@@ -212,12 +217,14 @@ computadora:
 
 	PUSH {lr}
 
+	BL marcador_actual
+
 	LDR r0, =turno_computadora
 	BL puts
 
 	MOV r12, #2					@Se generara un numero aleatoreo entre 1 y 2
 	BL RANDOM
-	MOV r1, #1
+	MOV r1, r12
 
 	CMP r1, #1
 	BLEQ menor
@@ -275,11 +282,9 @@ punto_jugador2:
 	ADD r8, #1
 	POP {pc}
 
-lanzar_dados:
-	/*Lanzar dos dados y obtener numeros aleatoreos*/
-	MOV r11, #1
+marcador_actual:
 
-	PUSH {lr}					@Guarda la instruccion en donde fue llamada la subrutina
+	PUSH {lr}
 
 	/*Marcador actual*/
 	LDR r0, =mensaje_marcador
@@ -293,10 +298,22 @@ lanzar_dados:
 	MOV r1, r8
 	BL printf
 
+	POP {pc}
+
+
+lanzar_dados:
+	/*Lanzar dos dados y obtener numeros aleatoreos*/
+	MOV r11, #1
+
+	PUSH {lr}					@Guarda la instruccion en donde fue llamada la subrutina
+
 	/*Primer dado*/
 	MOV r12, #6
 	BL RANDOM					@Llama a la subrutina que genera numeros aleatorios
 	MOV r2, r12					@Asigna el valor aleatorio para luego sumarlo a dado 2
+
+	MOV r0, #1
+	BL sleep
 
 	/*Segundo dado*/
 	MOV r12, #6
